@@ -5,8 +5,10 @@ using System.Linq;
 namespace Cards {
     class Program {
         static void Main(string[] args) {
-            var startingDeck = Suits().SelectMany(suit => Ranks().Select(
-                rank => new { Suit = suit, Rank = rank }));
+            var startingDeck = Suits().LogQuery("Suit Generation").SelectMany(suit => Ranks()
+                .LogQuery("Rank Generation").Select(rank => new { Suit = suit, Rank = rank }))
+                .LogQuery("Starting Deck")
+                .ToArray();
 
             foreach (var card in startingDeck) {
                 Console.WriteLine(card);
@@ -16,7 +18,11 @@ namespace Cards {
             var shuffledDeck = startingDeck;
 
             do {
-                shuffledDeck = shuffledDeck.Take(26).InterleaveSequenceWith(shuffledDeck.Skip(26));
+                shuffledDeck = shuffledDeck.Skip(26)
+                    .LogQuery("Bottom Half")
+                    .InterleaveSequenceWith(shuffledDeck.Take(26).LogQuery("Top Half"))
+                    .LogQuery("Shuffle")
+                    .ToArray();
 
                 foreach (var card in shuffledDeck) {
                     Console.WriteLine(card);
